@@ -1,0 +1,13 @@
+{
+  "name": "govops-bot",
+  "version": "1.0.0",
+  "description": "GovOps bot — sends recurring Spell Review messages to Slack",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@slack/web-api": "^7.9.1",
+    "node-cron": "^3.0.3"
+  }
+}
