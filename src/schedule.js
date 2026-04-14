@@ -13,11 +13,13 @@ function entry(responsible, stage, time, week, day) {
 
 const events = [
   // ── Week 1 ──────────────────────────────────────────────────────────
-  entry("Governance", "Exec Sheet is created",                              "15:00", 1, 2),
+  entry("Prime Agent", "Prime Agent Spell PR is shared in Signal chat",     "09:00", 1, 1),
+  entry("Governance",  "Exec Sheet is created",                             "15:00", 1, 2),
   entry("All",        "Agreement is reached on the content and roles",      "15:00", 1, 2),
   entry("Crafter",    "Spell is cleaned up (for external contributions)",   "16:00", 1, 3),
-  entry("External",   "External code is contributed via PR (if needed)",    "23:59", 1, 5),
-  entry("Governance", "Exec Sheet is finalised and fully confirmed",        "23:59", 1, 5),
+  entry("External",    "External code is contributed via PR (if needed)",    "23:59", 1, 5),
+  entry("Governance",  "Exec Sheet is finalised and fully confirmed",       "23:59", 1, 5),
+  entry("Prime Agent", "Prime Agent Spell is deployed and handed over to GovFac", "17:00", 1, 5),
 
   // ── Week 2 ──────────────────────────────────────────────────────────
   entry("Crafter",    "Spell is crafted (without the Exec Hash)",           "16:00", 2, 1),
