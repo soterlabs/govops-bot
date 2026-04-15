@@ -4,7 +4,7 @@ const events = require("./schedule");
 const { getCurrentCycleWeek, getSpellDate } = require("./cycle");
 const { buildSlackMessage } = require("./message");
 
-const slack = new WebClient(process.env.REDLINE_BOT_TOKEN);
+const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 const channel = process.env.SLACK_CHANNEL_ID;
 
 // ISO weekday: 1 = Mon … 7 = Sun

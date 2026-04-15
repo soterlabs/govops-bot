@@ -12,12 +12,6 @@ function getCurrentCycleWeek(now = new Date()) {
   return (weeksSince % 2) + 1; // 1 or 2
 }
 
-// Returns the Date (UTC) of W1 Monday 00:00 for the 2-week cycle containing `now`.
-function getCycleStart(now = new Date()) {
-  const weeksSince = Math.floor((now - ANCHOR) / MS_PER_WEEK);
-  return new Date(ANCHOR.getTime() + Math.floor(weeksSince / 2) * 2 * MS_PER_WEEK);
-}
-
 // Returns the W2 Thursday date (spell execution day) for the current cycle.
 function getSpellDate(now = new Date()) {
   const weeksSince = Math.floor((now - ANCHOR) / MS_PER_WEEK);
@@ -27,4 +21,4 @@ function getSpellDate(now = new Date()) {
   return spellDay.toISOString().slice(0, 10); // "YYYY-MM-DD"
 }
 
-module.exports = { getCurrentCycleWeek, getCycleStart, getSpellDate };
+module.exports = { getCurrentCycleWeek, getSpellDate };
