@@ -18,7 +18,7 @@ const events = [
   // ── Week 1 ──────────────────────────────────────────────────────────
   entry("Prime Agent", "Prime Agent Spell PR sharing",                       "09:00", 1, 1),
   entry("Governance",  "Exec sheet creation",                               "15:00", 1, 2, { url: EXEC_SHEET_URL, text: "sheet" }),
-  entry("All",         "Agreement on spell content and roles",              "15:30", 1, 2),
+  entry("All",         "Agreement on spell content and roles",              "15:30", 1, 2, { url: "https://discord.com/channels/893112320329396265/1148691520845787297", text: "discord" }),
   entry("Crafter",     "Spell cleanup for external contributions",          "16:00", 1, 3),
   entry("External",    "External code PR contribution",                     "23:59", 1, 5),
   entry("Governance",  "Exec sheet finalisation",                           "23:59", 1, 5, { url: EXEC_SHEET_URL, text: "sheet" }),
