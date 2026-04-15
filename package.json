@@ -1,12 +1,15 @@
 {
-  "name": "govops-bot",
+  "name": "redline-bot",
   "version": "1.0.0",
-  "description": "GovOps bot — sends recurring Spell Review messages to Slack",
+  "description": "redline-bot — sends recurring Spell Review messages to Slack and responds to /redline-schedule and /redline-next",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "listener": "node src/listener.js",
+    "hello": "node src/hello.js"
   },
   "dependencies": {
+    "@slack/bolt": "^3.22.0",
     "@slack/web-api": "^7.9.1",
     "dotenv": "^17.4.2"
   }

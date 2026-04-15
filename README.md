@@ -1,12 +1,15 @@
-# govops-bot
+# redline-bot
 
-Slack bot that sends recurring notifications for the **Spell Review** process — the biweekly cycle through which Sky Governance prepares, reviews, deploys, and publishes Executive Vote spells.
+Slack bot that sends recurring notifications for the **Spell Review** process — the biweekly cycle through which Sky Governance prepares, reviews, deploys, and publishes Executive Vote spells. Also responds to `/redline-schedule` and `/redline-next` slash commands.
 
 ## How it works
 
-The bot runs a long-lived Node.js process with cron jobs. Every Monday through Friday, each job checks whether we are in **Week 1** or **Week 2** of the current cycle (relative to a configurable anchor date) and, if the timing matches, posts a Slack message listing the events due at that moment.
+The bot has two runtime modes:
 
-Events that share the same time slot are grouped into a single message. The bot currently tracks **19 events** across **11 notification slots**.
+- **Cron** (`src/index.js`, `npm start`) — a short-lived script triggered hourly by Railway's cron feature (`0 * * * *`). Each run checks whether we are in **Week 1** or **Week 2** of the current cycle, and if the current UTC hour matches any scheduled events, posts them to the configured Slack channel.
+- **Listener** (`src/listener.js`, `npm run listener`) — a long-lived Bolt app in Socket Mode that responds to slash commands (`/redline-schedule`, `/redline-next`) with the current schedule and countdown to the next event.
+
+Events that share the same notification hour are posted in the same run. The bot currently tracks **23 events** across the 2-week cycle.
 
 ### Notification schedule
 
@@ -31,44 +34,62 @@ The full event list — including 32 additional events identified from the diagr
 ```
 govops-bot/
 ├── src/
-│   ├── index.js        # entry point — groups events into cron jobs
-│   ├── schedule.js     # all 19 events with week, day, time, responsible party
-│   ├── cycle.js        # determines current cycle week (1 or 2)
-│   └── message.js      # builds Slack Block Kit messages
-├── references/         # source material used to build the schedule
-│   ├── coordination-table.md
-│   ├── spell_cycle.jpg
-│   └── atlas-A1.10-weekly-governance-cycle.md
-├── CROSS_REFERENCE.md  # 51 events cross-referenced across all 3 sources
-├── railway.toml        # Railway deployment config
+│   ├── index.js           # cron entry point — posts events due this hour
+│   ├── listener.js        # Socket Mode Bolt app — handles slash commands
+│   ├── schedule.js        # all 23 events (week, day, time, responsible party)
+│   ├── cycle.js           # derives current cycle week, cycle start, spell date
+│   ├── message.js         # Block Kit formatter for cron notifications
+│   ├── render-schedule.js # Block Kit formatter for /redline-schedule
+│   ├── next-event.js      # finds the next scheduled event + countdown
+│   └── hello.js           # smoke test — auth.test + a hello-world post
+├── references/            # source material used to build the schedule
+├── CROSS_REFERENCE.md     # events cross-referenced across all 3 sources
+├── slack-manifest.json    # Slack app manifest (recreate the app from this)
+├── railway.toml           # Railway deployment config
 ├── .env.example
 └── package.json
 ```
 
 ## Setup
 
-### 1. Create a Slack app
+### 1. Create the Slack app
 
-Create a Slack app with the `chat:write` bot scope and install it to your workspace. Copy the **Bot User OAuth Token** (`xoxb-...`).
+Create a new Slack app **From a manifest** at https://api.slack.com/apps and paste the contents of [`slack-manifest.json`](slack-manifest.json). This configures the bot user, scopes (`chat:write`, `commands`), the `/redline-schedule` and `/redline-next` slash commands, and enables Socket Mode in one step.
+
+After creating the app:
+
+1. **Install App** → **Install to Workspace** → copy the **Bot User OAuth Token** (`xoxb-...`).
+2. **Basic Information → App-Level Tokens** → **Generate Token and Scopes** with the `connections:write` scope → copy the resulting `xapp-...` token.
+3. In Slack, invite the bot to your target channel: `/invite @redline-bot`.
 
 ### 2. Configure environment variables
 
 | Variable | Description |
 |----------|-------------|
-| `SLACK_BOT_TOKEN` | Slack bot token (`xoxb-...`) |
-| `SLACK_CHANNEL_ID` | Target channel ID (e.g. `C0123456789`) |
-| `CYCLE_START_DATE` | The Monday of any known **Week 1** (e.g. `2026-04-13`) |
+| `REDLINE_BOT_TOKEN` | Bot User OAuth Token (`xoxb-...`), used by cron and listener |
+| `REDLINE_BOT_APP_TOKEN` | App-Level Token (`xapp-...`), used by the Socket Mode listener only |
+| `SLACK_CHANNEL_ID` | Target channel ID (e.g. `C0123456789`), used by cron only |
+
+The 2-week cycle anchor is hardcoded in `src/cycle.js` as `CYCLE_START_DATE` — update it there if the cycle shifts.
 
 ### 3. Run locally
 
 ```sh
 npm install
-SLACK_BOT_TOKEN=xoxb-... SLACK_CHANNEL_ID=C... CYCLE_START_DATE=2026-04-13 npm start
+cp .env.example .env   # then fill in real values
+npm run hello          # smoke test: posts "Hello from redline-bot" to SLACK_CHANNEL_ID
+npm start              # cron run: posts events due at the current UTC hour (usually a no-op)
+npm run listener       # Socket Mode listener: responds to /redline-schedule and /redline-next
 ```
 
 ### 4. Deploy to Railway
 
-Set the three environment variables in your Railway project. Push to the connected repo — Railway builds via Nixpacks and starts with `npm start`. The process restarts automatically on failure (`restartPolicyType = "always"`).
+The repo is designed to run as **two Railway services** sharing the same codebase:
+
+- **Cron service** — uses the defaults from `railway.toml`. Start command `npm start`, cron schedule `0 * * * *`. Needs `REDLINE_BOT_TOKEN` and `SLACK_CHANNEL_ID`.
+- **Listener service** — override Start Command to `npm run listener` and clear the cron schedule so the process stays up. Needs `REDLINE_BOT_TOKEN` and `REDLINE_BOT_APP_TOKEN`.
+
+Push to the connected branch and Railway rebuilds both services via Nixpacks.
 
 ## References
 
